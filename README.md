@@ -29,7 +29,7 @@ This model aims to assist medical professionals with automated, high-accuracy de
   * **Training:** 4571 images
   * **Validation:** 1141 images (20% split)
   * **Testing:** 1311 images
-* **Classes (4):** glioma, meningioma, pituitary, notumor
+* **Classes (4):** `glioma`, `meningioma`, `pituitary`, `notumor`
 
 Each MRI is resized to 224×224 pixels and normalized to the \[0,1] range.
 
@@ -37,7 +37,7 @@ Each MRI is resized to 224×224 pixels and normalized to the \[0,1] range.
 
 ## 🖼️ Data Preprocessing & Augmentation
 
-python
+```python
 train_datagen = ImageDataGenerator(
     rescale=1./255,
     rotation_range=30,
@@ -52,7 +52,7 @@ val_test_datagen = ImageDataGenerator(
     rescale=1./255,
     validation_split=0.2
 )
-
+```
 
 * **Rescaling:** pixel values scaled to \[0,1]
 * **Augmentations:** rotations (±30°), shifts (±20%), shear, zoom, horizontal flips
@@ -61,7 +61,7 @@ val_test_datagen = ImageDataGenerator(
 
 Visual sample of augmentations:
 
-python
+```python
 # sample code to visualize augmentations
 for i in range(9):
     plt.subplot(3,3,i+1)
@@ -69,26 +69,26 @@ for i in range(9):
     plt.axis('off')
 plt.tight_layout()
 plt.show()
-
+```
 
 ---
 
 ## 🏗️ Model Architecture
 
-A Sequential model built upon the **Xception** base:
+A `Sequential` model built upon the **Xception** base:
 
-1. **Xception** (ImageNet weights, include_top=False, input 224×224×3)
-2. GlobalAveragePooling2D()
+1. **Xception** (ImageNet weights, `include_top=False`, input 224×224×3)
+2. `GlobalAveragePooling2D()`
 3. Dense(1024, activation='silu') → BatchNorm → Dropout(0.5)
 4. Dense(512, activation='silu') → BatchNorm → Dropout(0.4)
 5. Dense(256, activation='silu') → Dropout(0.3)
 6. Output Dense(4, activation='softmax')
 
-python
+```python
 base_model = Xception(weights='imagenet', include_top=False, input_shape=(224,224,3))
 base_model.trainable = False
 model = Sequential([...])
-
+```
 
 * **Total params:** 23,622,956
 * **Trainable params:** 2,758,404 (base frozen)
@@ -104,13 +104,12 @@ model = Sequential([...])
   * Phase 2 (fine-tuning): lr=1e-5
 * **Loss:** Categorical Cross-Entropy
 * **Metrics:** Accuracy
-* **Callbacks:** EarlyStopping (monitor val_loss, patience=5)
+* **Callbacks:** EarlyStopping (monitor `val_loss`, patience=5)
 * **Class weights:**
 
-  
-python
+  ```python
   {0: 1.0811, 1: 1.0660, 2: 0.8956, 3: 0.9801}
-
+  ```
 
 **Training schedule:**
 
@@ -136,10 +135,12 @@ python
 * **Pituitary:** 99%
 
 ### Confusion Matrix
-![Confusion Matrix](images/confusion_matrix.png)
+
+![](images/confusion_matrix.png)
 
 ### Training Curves
-![Training Curves](images/training_curves.png)
+
+![](images/training_curves.png)
 
 The model achieves high reliability across all tumor types, with especially strong performance on non-tumor detection (98%) and pituitary tumors (99%). Glioma and meningioma classification remain robust at 92% and 88%, respectively.
 
